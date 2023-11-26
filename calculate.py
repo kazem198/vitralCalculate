@@ -1,9 +1,12 @@
 import cv2
 import numpy as np
 from cvzone.HandTrackingModule import HandDetector
+from cvzone.FaceMeshModule import FaceMeshDetector
 
 
 detector = HandDetector(detectionCon=0.5)
+detectorMesh = FaceMeshDetector(
+    staticMode=False, maxFaces=2, minDetectionCon=0.5, minTrackCon=0.5)
 
 
 class Button:
@@ -36,6 +39,7 @@ calcu = [["7", "8", "9", "*"], ["4", "5", "6", "-"],
 
 buttons = []
 delyCounter = 0
+isMesh = False
 
 for x in range(4):
     for y in range(4):
@@ -54,6 +58,7 @@ while True:
 
     success, img = cap.read()
     img = cv2.flip(img, 1)
+
     hands, img = detector.findHands(img, draw=True, flipType=True)
 
     cv2.rectangle(img, (800, 120), (1200, 200), (255, 255, 255), cv2.FILLED)
@@ -92,7 +97,9 @@ while True:
         if delyCounter > 10:
             delyCounter = 0
 
-    # print(result)
+    if isMesh:
+        img, faces = detectorMesh.findFaceMesh(img, draw=True)
+
     cv2.imshow("img", img)
     key = cv2.waitKey(1)
 
@@ -102,3 +109,9 @@ while True:
     if key == ord("r"):
         result = ""
         counter = 0
+
+    if key == ord("m"):
+        if isMesh:
+            isMesh = False
+        else:
+            isMesh = True
